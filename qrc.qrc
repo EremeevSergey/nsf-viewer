@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/new.png</file>
+        <file>images/open.png</file>
+        <file>images/save.png</file>
+        <file>images/saveas.png</file>
+        <file>images/add.png</file>
+        <file>images/del.png</file>
+        <file>images/edit.png</file>
+        <file>images/raw_data.png</file>
+        <file>images/link_bottom.png</file>
+        <file>images/link_top.png</file>
+        <file>images/link_over_top.png</file>
+        <file>images/link_over_bottom.png</file>
+        <file>images/link_no_top.png</file>
+        <file>images/link_no_bottom.png</file>
+        <file>images/image.png</file>
+        <file>images/split.png</file>
+        <file>images/merge.png</file>
+    </qresource>
+</RCC>
