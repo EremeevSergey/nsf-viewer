@@ -169,7 +169,7 @@ bool MainWindow::showModifiedDialog()
     if (Project.isOpened() && projectModified){
         QMessageBox msgBox;
         msgBox.setText(tr("Проект был изменен."));
-        msgBox.setInformativeText("Хотите сохранить изменения?");
+        msgBox.setInformativeText(tr("Хотите сохранить изменения?"));
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         int ret = msgBox.exec();
@@ -191,7 +191,8 @@ bool MainWindow::showModifiedDialog()
 void MainWindow::onNewProject()
 {
     if (showModifiedDialog()){
-        QString fname=QFileDialog::getOpenFileName(0,tr("Создать проект"),".",tr("Бинарный файл (*.bin);;Все файлы (*.*)"),0);//,QFileDialog::DontConfirmOverwrite);
+        QString fname=QFileDialog::getOpenFileName(0,tr("Создать проект"),".",
+                                                   tr("Бинарный файл (*.bin);;Все файлы (*.*)"),0);
         if (fname.length()>0 && Project.create(fname)){
             projectModified = true;
             updateControls();
@@ -202,7 +203,8 @@ void MainWindow::onNewProject()
 void MainWindow::onOpenProject()
 {
     if (showModifiedDialog()){
-        QString fname=QFileDialog::getOpenFileName(0,tr("Открыть проект"),".",tr("Файлы проектов (*.prj)"),0,QFileDialog::ReadOnly);//,QFileDialog::DontConfirmOverwrite);
+        QString fname=QFileDialog::getOpenFileName(0,tr("Открыть проект"),".",
+                                                   tr("Файлы проектов (*.prj)"),0,QFileDialog::ReadOnly);
         if (fname.length()>0 && Project.open(fname)){
             updateControls();
         }
