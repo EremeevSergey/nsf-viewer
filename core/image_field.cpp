@@ -39,13 +39,13 @@ QImage& TImageField::drawByteArray(const QByteArray &data,
 {
     int height = (Size+Width-1)/Width;
     tmpPixmap = QImage(Width*2*pixel_size,height*pixel_size,QImage::Format_RGB444);
-    tmpPixmap.fill(QColor(0,0,0,0));
+    tmpPixmap.fill(QColor(Qt::white));
 
 //    int offset=Start;
     int offset=0;//Start;
     int data_size = data.size();
-    for (int y=0;y<height;y++){
-        for (int x=0;x<Width;x++){
+    for (int y=0;y<height && offset<Size;y++){
+        for (int x=0;x<Width && offset<Size;x++){
             int pos = (offset&1)? Start + offset-1: Start + offset+1;
             if (pos>=0 && pos < data_size){
                 quint8 byte = data.at(pos);
@@ -59,7 +59,7 @@ QImage& TImageField::drawByteArray(const QByteArray &data,
                 else color = QColor(0,0,0,0);
                 drawPixel1(tmpPixmap,color,(2*x+1)*pixel_size,y*pixel_size,pixel_size);
             }
-            offset++;;
+            offset++;
         }
     }
     return tmpPixmap;

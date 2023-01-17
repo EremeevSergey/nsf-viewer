@@ -11,6 +11,8 @@
 #include "widgets/images_view_widget.h"
 #include "widgets/preview_widget.h"
 
+#include <QDebug>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -27,6 +29,9 @@ protected:
 private:
     CProjectModel Project;
     bool          projectModified;
+    quint32       lastFieldStart;
+    quint32       lastFieldSize;
+    quint32       lastFieldWidth;
 
 private:
     QAction* newAction(const QString& name, const char* icon_name,
@@ -72,8 +77,10 @@ private slots:
     void onMergeFields();
     void onSplitField();
 
-    void onHexWidgetClick(quint32);
-    void onCurrentChanged(const QModelIndex&,const QModelIndex&);
-    void onSelectionChanged(const QItemSelection&,const QItemSelection&);
+    void onHexWidgetClick   (quint32);
+    void onHexWidgetDblClick(quint32);
+    void onCurrentChanged   (const QModelIndex&,const QModelIndex&);
+    void onSelectionChanged (const QItemSelection&,const QItemSelection&);
+    void onDblClick         (const QModelIndex&){onModField();}
 };
 #endif // MAINWINDOW_H

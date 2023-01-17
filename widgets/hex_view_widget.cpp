@@ -40,7 +40,7 @@ bool CHexViewWidget::setOffset(qint32 offset)
     if (rowData && offset>=0 &&
             (offset + sizeData)<=static_cast<quint32>(rowData->size())) {
         startOffset=offset;
-//        clearSelection();
+        //        clearSelection();
         geometryUpdate();
         repaint();
         return true;
@@ -53,7 +53,7 @@ bool CHexViewWidget::setSizeData(qint32 size)
     if (rowData && size>0 &&
             (startOffset + size)<=static_cast<quint32>(rowData->size())) {
         sizeData=size;
-//        clearSelection();
+        //        clearSelection();
         geometryUpdate();
         repaint();
         return true;
@@ -101,7 +101,7 @@ bool CHexViewWidget::getAddrByPoint(const QPoint& pt, quint32& addr)
         if (addr>=startOffset && addr<startOffset+sizeData) return true;
     }
     else if (showAscii && pt.x()>=charDrawingOffset &&
-            pt.x()<(charDrawingOffset+widthInByte*charWidth)){
+             pt.x()<(charDrawingOffset+widthInByte*charWidth)){
         // Попали в зону символов
         addr = (pt.x()-charDrawingOffset)/charWidth;
         addr+=pt.y()/charHeight*widthInByte;
@@ -241,10 +241,23 @@ void CHexViewWidget::mousePressEvent(QMouseEvent *event)
     if (event && event->button() == Qt::LeftButton){
         quint32 addr;
         if (getAddrByPoint(event->pos(),addr)){
-            qDebug() << QString::number(addr,16) <<Qt::endl;
+            //            qDebug() << QString::number(addr,16) <<Qt::endl;
             emit signalClick(addr);
         }
     }
+    QWidget::mousePressEvent(event);
+}
+
+void CHexViewWidget::mouseDoubleClickEvent(QMouseEvent* event)
+{
+    if ( event->button() == Qt::LeftButton ){
+//        qDebug() << "CHexViewer::mouseDoubleClickEvent";
+        quint32 addr=0;
+        if (getAddrByPoint(event->pos(),addr)){
+            emit signalDblClick(addr);
+        }
+    }
+    QWidget::mouseDoubleClickEvent(event);
 }
 
 /******************************************************************************\
@@ -259,6 +272,10 @@ CHexViewer::CHexViewer(QWidget* parent):
     setWidget(hexWidget);
     connect(hexWidget,SIGNAL(signalClick(quint32)),
             this,SIGNAL(signalClick(quint32)));
+    connect(hexWidget,SIGNAL(signalClick(quint32)),
+            this,SIGNAL(signalClick(quint32)));
+    connect(hexWidget,SIGNAL(signalDblClick(quint32)),
+            this,SIGNAL(signalDblClick(quint32)));
 }
 
 void CHexViewer::setProject(const CProjectModel* model)
@@ -320,10 +337,10 @@ void CHexViewer::slotCurrentChanged  (const QModelIndex &current,
                 QRect pt2 = hexWidget->getByteRect(field->Start+field->Size);
                 QPoint c = hexWidget->mapFromGlobal(QCursor::pos());
 
-//                qDebug() << "start=" << pt1.top() << "  end=" <<pt2.bottom() << "   cursor=" <<c.y();
+                //                qDebug() << "start=" << pt1.top() << "  end=" <<pt2.bottom() << "   cursor=" <<c.y();
 
                 if (c.y()<pt1.top() || c.y()>pt2.bottom()){
-                    ensureVisible(pt2.x(),pt2.y());
+                    //                    ensureVisible(pt2.x(),pt2.y());
                     ensureVisible(pt1.x(),pt1.y());
                 }
             }

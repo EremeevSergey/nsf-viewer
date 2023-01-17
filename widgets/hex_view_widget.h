@@ -107,8 +107,10 @@ protected:
      */
     virtual void paintEvent(QPaintEvent *event) override;
     virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) override;
 signals:
-    void  signalClick(quint32 addr);
+    void  signalClick   (quint32 addr);
+    void  signalDblClick(quint32 addr);
 private:
     const QByteArray* rowData ; //! Отображаемый массив.
     quint16     widthInByte ; //! Количество байт в сроке
@@ -171,8 +173,6 @@ public:
     }
     void clearSelection()               {        hexWidget->clearSelection();}
 
-
-
 private:
     CHexViewWidget* hexWidget;
     const CProjectModel* Project;
@@ -186,6 +186,7 @@ public slots:
                               const QModelIndex &previous);
 signals:
     void  signalClick(quint32 addr);
+    void  signalDblClick(quint32 addr);
 };
 
 #endif // HEX_VIEW_H

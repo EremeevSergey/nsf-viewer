@@ -34,7 +34,7 @@
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
-          <verstretch>3</verstretch>
+          <verstretch>4</verstretch>
          </sizepolicy>
         </property>
         <property name="frameShape">
@@ -48,7 +48,7 @@
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
-          <verstretch>1</verstretch>
+          <verstretch>2</verstretch>
          </sizepolicy>
         </property>
         <property name="frameShape">
@@ -86,7 +86,7 @@
        <widget class="QFrame" name="imagesFrame">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>1</horstretch>
+          <horstretch>2</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>

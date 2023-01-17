@@ -54,6 +54,72 @@ void CEditFieldDialog::on_buttonBox_rejected()
     close();
 }
 
+QDialog::DialogCode CEditFieldDialog::Execute(CProject* project,int field_index)
+{
+    result = QDialog::Rejected;
+    if (project){
+        TField* field = project->getField(field_index);
+        if (field && project->getData().size()>0){
+            dataArray = &(project->getData());
+            origField = nullptr;
+            ui->editName->setText(field->Name);
+            ui->spStartOffset->setRange(0,dataArray->size()-field->Size);
+            ui->spStartOffset->setValue(field->Start);
+            ui->spSize->setRange(1,dataArray->size()-field->Start);
+            ui->spSize->setValue(field->Size);
+
+            hexWidget->setData(dataArray);
+            hexWidget->setOffset(field->Start);
+            hexWidget->setSizeData(field->Size);
+
+            TField* field_other = project->getField(field_index-1);
+            if (field_other)
+                hexWidget->addSelection(0,field_other->Start +field_other->Size,
+                                        "#ffa897");
+            field_other = project->getField(field_index+1);
+            if (field_other)
+                hexWidget->addSelection(field_other->Start,
+                                        dataArray->size()-field_other->Start,
+                                        "#ffa897");
+
+            TImageField* image_field=nullptr;
+            if (field->Type()==TField::EImage &&
+                    (image_field=dynamic_cast<TImageField*>(field))){
+                // Картинка
+                ui->spImageWidth->setRange(1,field->Size);
+                ui->spImageWidth->setValue(image_field->Width);
+                ui->spSize->setSingleStep(image_field->Width);
+                ui->spSize->setValue(field->Size - (field->Size%image_field->Width));
+                hexWidget->setWidthInByte(image_field->Width);
+            }
+            else {
+                ui->spSize->setSingleStep(1);
+                ui->imageScrollArea->hide();
+                ui->spImageWidth->hide();
+                ui->labelImageWidth->hide();
+                ui->previewFrame->hide();
+            }
+            origField = field;
+            updatePreview();
+            updateImage();
+
+            //        qDebug() << "isModdal() = " << isModal();
+            //        qDebug() << "exec -> show()";
+            show();
+            eventloop->exec();
+            if (result==QDialog::Accepted){
+                // переделываем поле в соответствии с изменениями
+                field->Name  = ui->editName->text();
+                field->Start = ui->spStartOffset->value();
+                field->Size  = ui->spSize->value();
+                if (image_field)
+                    image_field->Width = ui->spImageWidth->value();
+            }
+        }
+    }
+    return result;
+}
+/*
 QDialog::DialogCode CEditFieldDialog::Execute(TField* field,const QByteArray* data)
 {
     result = QDialog::Rejected;
@@ -107,7 +173,7 @@ QDialog::DialogCode CEditFieldDialog::Execute(TField* field,const QByteArray* da
     //    qDebug() << "exec -> return";
     return result;
 }
-
+*/
 void CEditFieldDialog::updatePreview()
 {
     if (origField && origField->Type()==TField::EImage){
@@ -155,6 +221,8 @@ void CEditFieldDialog::on_spSize_valueChanged(int arg1)
 void CEditFieldDialog::on_spImageWidth_valueChanged(int arg1)
 {
     hexWidget->setWidthInByte(arg1);
+    ui->spSize->setSingleStep(arg1);
+    ui->spSize->setValue(ui->spSize->value() - (ui->spSize->value()%arg1));
     updateImage  ();
     updatePreview();
 }

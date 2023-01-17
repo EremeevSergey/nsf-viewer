@@ -26,6 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     fieldWidget = new CFieldsViewWidget();
     setWidgetTo(fieldWidget,ui->fieldsFrame);
     fieldWidget->setModel(&Project);
+    connect(fieldWidget->selectionModel(),SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)),
+            this,SLOT(onSelectionChanged(const QItemSelection&,const QItemSelection&)));
+    connect(fieldWidget,SIGNAL(doubleClicked(const QModelIndex&)),
+            this,SLOT(onDblClick(const QModelIndex&)));
 
     hexWidget = new CHexViewer();
     setWidgetTo(hexWidget,ui->hexFrame);
@@ -38,16 +42,21 @@ MainWindow::MainWindow(QWidget *parent)
             this,SLOT(onCurrentChanged(const QModelIndex&,const QModelIndex&)));
     connect(hexWidget,SIGNAL(signalClick(quint32)),
             this,SLOT(onHexWidgetClick(quint32)));
+    connect(hexWidget,SIGNAL(signalDblClick(quint32)),
+            this,SLOT(onHexWidgetDblClick(quint32)));
 
-    connect(fieldWidget->selectionModel(),SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)),
-            this,SLOT(onSelectionChanged(const QItemSelection&,const QItemSelection&)));
 
     imagesWidget = new CImagesViewWidget();
     setWidgetTo(imagesWidget,ui->imagesFrame);
     imagesWidget->setModel(&Project);
     imagesWidget->setSelectionModel(fieldWidget->selectionModel());
+    connect(imagesWidget,SIGNAL(doubleClicked(const QModelIndex&)),
+            this,SLOT(onDblClick(const QModelIndex&)));
 
     projectModified = false;
+    lastFieldStart = -1;
+    lastFieldSize  = -1;
+    lastFieldWidth = -1;
 
     createActions();
     createToolBar();
@@ -131,11 +140,11 @@ void MainWindow::updateControls()
         fl = true;
         const TImageField* img_filed = dynamic_cast<const TImageField*>(Project.getFieldByIndex(*i));
         if (img_filed){
-             if (width<=0) width = img_filed->Width;
-             else if (width != img_filed->Width){
-                 fl = false;
-                 break;
-             }
+            if (width<=0) width = img_filed->Width;
+            else if (width != img_filed->Width){
+                fl = false;
+                break;
+            }
         }
     }
     actMerge->setEnabled(fl && list.size()>1);
@@ -241,7 +250,9 @@ void MainWindow::onSaveAsProject()
 void MainWindow::onAddField()
 {
     CAddFieldDialog dlg;
-    TField* field = dlg.Execute(Project.getData().size());
+    TField* field = dlg.Execute(Project.getData().size(),
+                                lastFieldStart+lastFieldSize,
+                                lastFieldSize,lastFieldWidth);
     if (field){
         int index=Project.addField(field);
         if (index>=0){
@@ -263,11 +274,16 @@ void MainWindow::onModField()
     TField* field = getCurrentField(&current);
     if (field){
         CEditFieldDialog dlg;
-        if (dlg.Execute(field,&(Project.getData()))==QDialog::Accepted){
+        if (dlg.Execute(&Project,current.row())){
             projectModified = true;
             Project.sendUpdateField(current);
             updateControls();
         }
+//        if (dlg.Execute(field,&(Project.getData()))==QDialog::Accepted){
+//            projectModified = true;
+//            Project.sendUpdateField(current);
+//            updateControls();
+//        }
     }
 }
 
@@ -328,26 +344,34 @@ void MainWindow::onSplitField()
 
 void MainWindow::onHexWidgetClick(quint32 addr)
 {
+//    qDebug() << "onHexWidgetClick(";
     TField* field(nullptr);
     int index(0);
+    //    fieldWidget->scrollTo(fieldWidget->model()->index(index,0));
     if (Project.getFieldByAddress(addr,&field,index))
         fieldWidget->setCurrentIndex(fieldWidget->model()->index(index,0));
-    /*else*/
-    fieldWidget->scrollTo(fieldWidget->model()->index(index,0));
+    else
+        fieldWidget->scrollTo(fieldWidget->model()->index(index,0));
 }
 
-void MainWindow::onCurrentChanged(const QModelIndex& current,
-                                  const QModelIndex& previous)
+void MainWindow::onHexWidgetDblClick(quint32 addr)
 {
-    //    qDebug() << "onCurrentChanged(";
-    //    qDebug() << "    " << current << ",";
-    //    qDebug() << "    " << previous;
-    //    qDebug() << ");";
-
-    Q_UNUSED(current)
-    Q_UNUSED(previous)
-    updatePreviewImage();
-    updateControls();
+//    qDebug() << "onHexWidgetDblClick(";
+    TField* field(nullptr);
+    int index(0);
+    if (Project.getFieldByAddress(addr,&field,index)){
+        fieldWidget->setCurrentIndex(fieldWidget->model()->index(index,0));
+        onModField();
+    }
+    else{
+        lastFieldStart = field->Start;
+        lastFieldSize  = field->Size;
+        const TImageField* img_field;
+        if (field->Type()==TField::EImage &&
+                (img_field=dynamic_cast<const TImageField*>(field)))
+            lastFieldWidth = img_field->Width;
+        onAddField();
+    }
 }
 
 void MainWindow::updatePreviewImage()
@@ -357,10 +381,38 @@ void MainWindow::updatePreviewImage()
     else       previewWidget->setImage(QImage());
 }
 
+void MainWindow::onCurrentChanged(const QModelIndex& current,
+                                  const QModelIndex& previous)
+{
+//    qDebug() << "onCurrentChanged(";
+    //    qDebug() << "    " << current << ",";
+    //    qDebug() << "    " << previous;
+    //    qDebug() << ");";
+
+    Q_UNUSED(current)
+    Q_UNUSED(previous)
+    const TField* field = getCurrentField();
+    if (field){
+        lastFieldStart = field->Start;
+        lastFieldSize  = field->Size;
+        const TImageField* img_field;
+        if (field->Type()==TField::EImage &&
+                (img_field=dynamic_cast<const TImageField*>(field)))
+            lastFieldWidth = img_field->Width;
+    }
+    else{
+        lastFieldStart = -1;
+        lastFieldSize  = -1;
+        lastFieldWidth = -1;
+    }
+    updatePreviewImage();
+    updateControls();
+}
+
 void MainWindow::onSelectionChanged(const QItemSelection& selected,
                                     const QItemSelection& deselected)
 {
-    //    qDebug() << "onSelectionChanged(";
+//    qDebug() << "onSelectionChanged(";
     //    qDebug() << "    " << selected << ",";
     //    qDebug() << "    " << deselected;
     //    qDebug() << ");";

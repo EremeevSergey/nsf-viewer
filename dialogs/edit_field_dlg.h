@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QLabel>
 #include <QEventLoop>
+#include "core/project.h"
 #include "core/image_field.h"
 #include "widgets/hex_view_widget.h"
 #include "widgets/preview_widget.h"
@@ -22,7 +23,8 @@ public:
     explicit CEditFieldDialog(QWidget *parent = nullptr);
     ~CEditFieldDialog();
 
-    QDialog::DialogCode Execute(TField* field,const QByteArray* data);
+//    QDialog::DialogCode Execute(TField* field,const QByteArray* data);
+    QDialog::DialogCode Execute(CProject* project,int field_index);
 protected:
     void  hideEvent(QHideEvent *event) override;
     void updatePreview();
