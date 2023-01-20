@@ -31,14 +31,11 @@ protected:
     void updateImage  ();
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
-
     void on_spStartOffset_valueChanged(int arg1);
-
-    void on_spSize_valueChanged(int arg1);
-
     void on_spImageWidth_valueChanged(int arg1);
+
+    void slotSizeChanged(int arg1);
 
 private:
     Ui::edit_field_dlg *ui;
@@ -46,6 +43,7 @@ private:
     CPreviewWidget*     previewWidget;
     QLabel*             imageWidget;
     QEventLoop*         eventloop;
+    int                 lastSize;  //! Последне значение размера поля
 
     const QByteArray*   dataArray;
     TField*             origField;
